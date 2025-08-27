@@ -118,6 +118,7 @@ void free_http_request_params(struct query_params params) {
 void free_http_response(struct http_response response) {
     free(response.protocol);
     free_http_headers(response.headers);
+    free(response.body);
 }
 
 /**
