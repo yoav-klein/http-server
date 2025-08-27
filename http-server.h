@@ -11,6 +11,7 @@ enum Method {
 
 enum StatusCode {
     OK = 200,
+    BAD_REQUEST = 400,
     UNAUTHORIZED = 401,
     FORBIDDEN = 403,
     NOT_FOUND = 404,
@@ -64,6 +65,7 @@ void send_response(int cfd, struct http_response response);
 struct http_header *create_header(const char *key, const char *value);
 void display_request(struct http_request request);
 char *get_header_value(struct http_headers headers, const char *key);
+char *get_query_param(struct query_params params, const char *key);
 struct http_request get_request(struct http_server server);
 void close_server(struct http_server server);
 struct http_server init_server(char *address, int port);

@@ -17,8 +17,10 @@
 char *status_code_to_string(enum StatusCode code) {
     switch(code) {
         case 200: return "OK"; break;
+        case 400: return "Bad Request"; break;
         case 401: return "Unauthorized"; break;
         case 403: return "Fobidden"; break;
+        case 404: return "Not Found"; break;
         case 500: return "Internal server error"; break;
     }
 }
@@ -142,10 +144,10 @@ void free_http_request(struct http_request request) {
  * */
 
 void send_response(int cfd, struct http_response response) {
+
     #define RESP_BUFF_SIZE (1024)
     char buffer[RESP_BUFF_SIZE] = { 0 };
-    char *curr = buffer;
-
+    
     /* status line */
     sprintf(buffer, "%s %u %s\r\n",
         response.protocol, response.status_code, status_code_to_string(response.status_code));
@@ -155,17 +157,16 @@ void send_response(int cfd, struct http_response response) {
     while(*runner) {
         char *key = (*runner)->key;
         char *value = (*runner)->value;
-        curr = buffer + strlen(buffer);
-        sprintf(curr, "%s: %s\r\n", key, value);
+        sprintf(buffer + strlen(buffer), "%s: %s\r\n", key, value);
         /*sprintf(buffer, "%s%s: %s\r\n", buffer, key, value);*/
         ++runner;
     }
     /* end response header */
-    curr = buffer + strlen(buffer);
-    sprintf(curr, "\r\n");
+    sprintf(buffer + strlen(buffer), "\r\n");
     /* body */
-    sprintf(curr + 2, "%s", response.body);
-    
+
+    sprintf(buffer + strlen(buffer), "%s", response.body);
+
     write(cfd, buffer, strlen(buffer));
 }
 
@@ -248,6 +249,32 @@ char *get_header_value(struct http_headers headers, const char *key) {
 
     return NULL;
 }
+
+/**
+ *
+ * get_query_param
+ *
+ * query_params - query_params struct
+ * key - key to be looked for
+ *
+ * returns: the value if exists, NULL otherwise
+ * */
+char *get_query_param(struct query_params params, const char *key) {
+    struct query_param **runner = params.param_list;
+
+    if(runner == NULL) return NULL;
+    
+    while(*runner) {
+        if(strcmp((*runner)->key, key) == 0) {
+            return (*runner)->value;
+        }
+        ++runner;
+    }
+
+    return NULL;
+}
+
+
 
 /**
  *
